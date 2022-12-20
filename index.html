@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Web Dev Final Project</title>
+        <link rel="stylesheet" type="text/css" href="style.css">
+        
+    </head>
+    <body>
+        <header>
+            <h1 id="header">CSE 204 Web Development Final Project: ISBN Library</h1>
+        </header>
+        <div id="wrapper">
+            <h2>Enter ISBN-13 Below</h2>
+        </div>
+        <div id="libForm">
+            <input type="text" id="libSearch" placeholder="ISBN">
+            <button id="submit_btn">Search</button>
+            <button id="rl_btn">Add to Reading List</button>
+        </div>
+        <div id="bookInfo">
+            <img id="cover" class="cover"></img>
+            <br>
+            <div id="textInfo">
+                <h3 id="title"></h3>
+                <h4 id="author"></h4>
+                <p id="numPages"></p>
+                <p id="pubDate"></p>
+                <p id="subjects"></p>
+            </div>
+        </div>
+        <div id="readingListDiv">
+            <h3 id="readingListHeader"> Your Reading List </h3>
+            <ul id="readingList">
+                    
+            </ul>
+        </div>
+        <div id='APIInfo'>
+            <h3 id="aboutHeader"> About this API </h3>
+            <div id="wrapper2">
+                <p id="info">The Open Library Books API provides a programmatic client-side method for querying information of books using Javascript.
+                    Open Library is an online project of non-profit organization Internet Archive, which isintended to create a web page for 
+                    every book ever published. Open Library provides online digital book copies of both in and out of print books in multiple formats.
+                    The project was created by Aaron Schwartz, Brewster Kahle, Alexis Rossi, Anand Chitipothu, and Rebecca Malamud.
+                </p>
+                <a href="https://openlibrary.org/developers/api">Learn More</a>
+            </div>
+            
+        </div>
+        <div id="examples">
+            <h3 id="listHeader"> Example Books </h3>
+            <ul id="exampleList">
+                <li>Learning Web App Development, Semmy Purewal: 9781449370190</li>
+                <li>Fundamentals of Web Development, Randy Connolly, Ricardo Hoar: 9780134481265</li>
+                <li>HTML & CSS: Design and Build Web Sites, Jon Duckett: 9781118008188</li>
+                <li>The Full Stack Developer, Chris Northwood: 9781484241516</li>
+                <li>Learning Web Design, Jennifer Robbins: 9781449319274</li>
+                <li>Web Coding & Development All-in-One For Dummies, Paul McFedries: 9781119473923</li>
+                <li>JavaScript: The Definitive Guide, David Flanagan: 9781491952023</li>
+            </ul>
+        </div>
+    </body>
+    <script>
+        function APIcall(event){
+            const ISBN = document.getElementById('libSearch').value
+            url = 'https://openlibrary.org/api/books?bibkeys=ISBN:' + ISBN + '&jscmd=details&format=json'
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    var getData = data["ISBN:" + ISBN];
+                    curISBN = ISBN
+                    if(getData != undefined){
+                        if(getData.details.title != undefined){
+                            var title = getData.details.title;
+                            curBook = title;
+                            document.getElementById('title').textContent = title;
+                        }
+                        if(getData.details.authors != undefined){
+                            var author = getData.details.authors[0].name;
+                            curAuthor = author;
+                            document.getElementById('author').textContent = author;
+                        }
+                        if(getData.details.number_of_pages != undefined){
+                            var numPages = getData.details.number_of_pages;
+                            document.getElementById('numPages').textContent = 'Number of Pages: ' + numPages;
+                        }
+                        if(getData.details.publish_date != undefined){
+                            var pubDate = getData.details.publish_date;
+                            document.getElementById('pubDate').textContent = 'Publication Date: ' + pubDate;
+                        }
+                        if(getData.details.subjects != undefined){
+                            var subjects = getData.details.subjects[0];
+                            document.getElementById('subjects').textContent = 'Primary Subject: ' + subjects;
+                        }
+                        document.getElementById('cover').src = "https://covers.openlibrary.org/b/isbn/" + ISBN + "-L.jpg";
+                        document.getElementById('cover').style.display = 'inline-block'
+                        document.getElementById('textInfo').style.display = 'inline-block'
+                    }
+                    else{
+                        document.getElementById('title').textContent = 'ISBN not Recognized';
+                        document.getElementById('author').textContent = '';
+                        document.getElementById('numPages').textContent = '';
+                        document.getElementById('pubDate').textContent = '';
+                        document.getElementById('subjects').textContent = '';
+                        document.getElementById('cover').src = ';'
+                    }
+                })
+        }
+        var curBook = ''
+        var curISBN = ''
+        var curAuthor = ''
+        var numItems = 0
+        var listISBNs = []
+        
+        function addToList(event){
+            if(curBook != '' && numItems < 14 && !listISBNs.includes(curISBN)){
+                var li = document.createElement("li");
+                li.appendChild(document.createTextNode(curBook + ", " + curAuthor +": " + curISBN));
+                document.getElementById('readingList').append(li);
+                document.getElementById('readingListDiv').style.display = 'inline-block';
+                numItems += 1;
+                listISBNs.push(curISBN)
+            }
+        }
+        document.getElementById('submit_btn').addEventListener('click', APIcall, false)
+        document.getElementById('rl_btn').addEventListener('click', addToList, false)
+    </script>
+</html>
